@@ -90,14 +90,14 @@ public class RadiolaController : MonoBehaviour
             if (trigger) triggerDetected = true;
         }
 
-        // Grip → Encender/Apagar
-        if (gripDetected && !_gripPressedLastFrame)
+        // Trigger → Encender/Apagar
+        if (triggerDetected && !_triggerPressedLastFrame)
         {
             ToggleRadio();
             _lastActionTime = Time.time;
         }
-        // Trigger → Cambiar canción
-        else if (triggerDetected && !_triggerPressedLastFrame)
+        // Grip → Cambiar canción
+        else if (gripDetected && !_gripPressedLastFrame && encendida)
         {
             CambiarCancion();
             _lastActionTime = Time.time;

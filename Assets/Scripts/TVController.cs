@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.XR;
-
 using System.Collections.Generic;
 
 public class TVController : MonoBehaviour
@@ -14,9 +13,8 @@ public class TVController : MonoBehaviour
 
     bool tvEncendida;
 
-    // ─── VR ───────────────────────────────────────────────────────────────────
     private bool _isHovered = false;
-    private bool _triggerPressedLastFrame = false;
+    private bool _gripPressedLastFrame = false;
     private float _lastActionTime = 0f;
     private const float _cooldown = 0.4f;
     private List<InputDevice> _controllers = new List<InputDevice>();
@@ -36,23 +34,21 @@ public class TVController : MonoBehaviour
         var interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
         if (interactable != null)
         {
-            interactable.hoverEntered.AddListener(_ => { _isHovered = true;  _triggerPressedLastFrame = false; });
-            interactable.hoverExited.AddListener(_  => { _isHovered = false; _triggerPressedLastFrame = false; });
+            interactable.hoverEntered.AddListener(_ => { _isHovered = true;  _gripPressedLastFrame = false; });
+            interactable.hoverExited.AddListener(_  => { _isHovered = false; _gripPressedLastFrame = false; });
         }
     }
 
     void Update()
     {
-        // 👉 Desktop: clic derecho → cambiar canal (igual que original)
         if (tvEncendida && Input.GetMouseButtonDown(1))
             CambiarVideo();
 
-        // 👉 VR: trigger → cambiar canal
         if (_isHovered && tvEncendida)
-            CheckVRTrigger();
+            CheckVRGrip();
     }
 
-    void CheckVRTrigger()
+    void CheckVRGrip()
     {
         if (Time.time - _lastActionTime < _cooldown) return;
 
@@ -60,23 +56,21 @@ public class TVController : MonoBehaviour
             InputDevices.GetDevicesWithCharacteristics(
                 InputDeviceCharacteristics.Controller, _controllers);
 
-        bool triggerDetected = false;
+        bool gripDetected = false;
         foreach (var device in _controllers)
         {
-            device.TryGetFeatureValue(CommonUsages.triggerButton, out bool trigger);
-            if (trigger) triggerDetected = true;
+            device.TryGetFeatureValue(CommonUsages.gripButton, out bool grip);
+            if (grip) gripDetected = true;
         }
 
-        if (triggerDetected && !_triggerPressedLastFrame)
+        if (gripDetected && !_gripPressedLastFrame)
         {
             CambiarVideo();
             _lastActionTime = Time.time;
         }
 
-        _triggerPressedLastFrame = triggerDetected;
+        _gripPressedLastFrame = gripDetected;
     }
-
-    // ─── Acciones (igual que original) ───────────────────────────────────────
 
     public void ToggleTV()
     {

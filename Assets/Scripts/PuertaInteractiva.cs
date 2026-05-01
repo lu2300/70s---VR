@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // Necesario para InputActionReference
+using UnityEngine.InputSystem;
 
 public class PuertaInteractiva : MonoBehaviour
 {
@@ -8,7 +8,8 @@ public class PuertaInteractiva : MonoBehaviour
     public float velocidad = 2f;
 
     [Header("Input VR")]
-    public InputActionReference botonVR; // Botón de VR para abrir/cerrar
+    public InputActionReference botonVR_Derecha;
+    public InputActionReference botonVR_Izquierda;
 
     private bool abierta = false;
     private Quaternion rotacionInicial;
@@ -19,13 +20,12 @@ public class PuertaInteractiva : MonoBehaviour
         rotacionInicial = transform.rotation;
         rotacionFinal = Quaternion.Euler(transform.eulerAngles + new Vector3(0, anguloApertura, 0));
 
-        if (botonVR != null)
-            botonVR.action.Enable();
+        if (botonVR_Derecha != null)  botonVR_Derecha.action.Enable();
+        if (botonVR_Izquierda != null) botonVR_Izquierda.action.Enable();
     }
 
     void Update()
     {
-        // Interpolamos hacia la rotación deseada
         Quaternion objetivo = abierta ? rotacionFinal : rotacionInicial;
         transform.rotation = Quaternion.Slerp(transform.rotation, objetivo, Time.deltaTime * velocidad);
 
@@ -34,31 +34,27 @@ public class PuertaInteractiva : MonoBehaviour
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 5f))
-            {
                 if (hit.transform == transform)
-                {
                     AlternarPuerta();
-                }
-            }
         }
 
         // --- Input VR ---
-        if (botonVR != null && botonVR.action.WasPressedThisFrame())
+        if (BotonPresionado(botonVR_Derecha) || BotonPresionado(botonVR_Izquierda))
         {
-            // Raycast desde la cámara del jugador para detectar la puerta
             Ray rayVR = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             if (Physics.Raycast(rayVR, out RaycastHit hitVR, 5f))
-            {
                 if (hitVR.transform == transform)
-                {
                     AlternarPuerta();
-                }
-            }
         }
+    }
+
+    bool BotonPresionado(InputActionReference boton)
+    {
+        return boton != null && boton.action.WasPressedThisFrame();
     }
 
     void AlternarPuerta()
     {
-        abierta = !abierta; // Alterna entre abrir y cerrar
+        abierta = !abierta;
     }
 }
